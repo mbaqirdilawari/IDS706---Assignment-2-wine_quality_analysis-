@@ -18,7 +18,8 @@ combined into a single file, with a `type` column that already labels each row a
 `"red"` or `"white"`. Each row is one wine sample, described by 11 chemical
 measurements, plus a `quality` score from 0–10 assigned by wine tasters. 
 The columns are:
-'fixed acidity, volatile acidity, citric acid, residual sugar, chlorides, free sulfur
+
+`fixed acidity, volatile acidity, citric acid, residual sugar, chlorides, free sulfur
 dioxide, total sulfur dioxide, density, pH, sulphates, alcohol, quality, type`
 
 ## How to run this
@@ -60,13 +61,16 @@ This reads the `requirements.txt` file in this repo and installs the four librar
 This is a **file/folder step, not a terminal command**: 
 Make sure `wine_quality_merged.csv` is placed inside a folder named `data/`, sitting right next to `analysis.py`. The folder structure should look like this:
 
+```
 wine-quality-analysis/
 ├── analysis.py
 ├── data/
-│ └── wine_quality_merged.csv
+│   └── wine_quality_merged.csv
 ├── graphs/
 ├── requirements.txt
+├── Makefile
 └── README.md
+```
 
 If you don't have the dataset yet, download it from the Kaggle link in the "Dataset" section above and place it in the `data/` folder.
 
