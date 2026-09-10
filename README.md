@@ -27,7 +27,7 @@ dioxide, total sulfur dioxide, density, pH, sulphates, alcohol, quality, type`
 2. Make sure `wine_quality_merged.csv` is inside a `data/` folder next to `analysis.py`.
 3. Run: `python analysis.py`
 4. The script prints its findings to the terminal and saves two charts,
-   `quality_vs_alcohol.png` and `alcohol_vs_density.png`, in this folder.
+   `graphs/quality_vs_alcohol.png` and `graphs/alcohol_vs_density.png`.
 
 ---
 

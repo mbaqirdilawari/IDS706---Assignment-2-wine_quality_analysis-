@@ -115,7 +115,13 @@ print("Boxplot is saved as quality_vs_alcohol.png")
 
 # Step 7: Visualization of Scatter Plot with Trend Line
 plt.figure(figsize=(10, 6))
-sns.regplot(data=wine, x="alcohol", y="density", scatter_kws={"alpha": 0.3}, line_kws={"color": "red"})
+sns.regplot(
+    data=wine,
+    x="alcohol",
+    y="density",
+    scatter_kws={"alpha": 0.3},
+    line_kws={"color": "red"},
+)
 plt.title("Alcohol Content vs. Density (All Wines)")
 plt.xlabel("Alcohol (%)")
 plt.ylabel("Density")
