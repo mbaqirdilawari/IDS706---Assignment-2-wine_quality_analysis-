@@ -5,6 +5,9 @@ from sklearn.metrics import mean_squared_error, r2_score
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+pd.set_option("display.max_columns", None)
+pd.set_option("display.width", None)
+
 # Step 1: Importing the dataset
 wine = pd.read_csv("data/wine_quality_merged.csv")
 print(f"Total rows: {len(wine)}")
@@ -54,6 +57,9 @@ print(" " " ")
 # Step 4: Grouping
 by_type = wine.groupby("type").agg(
     avg_alcohol=("alcohol", "mean"),
+    std_alcohol=("alcohol", "std"),
+    min_alcohol=("alcohol", "min"),
+    max_alcohol=("alcohol", "max"),
     avg_quality=("quality", "mean"),
     no_of_wines=("quality", "count"),
 )
@@ -61,6 +67,9 @@ print(by_type)
 
 by_quality = wine.groupby("quality").agg(
     avg_alcohol=("alcohol", "mean"),
+    std_alcohol=("alcohol", "std"),
+    min_alcohol=("alcohol", "min"),
+    max_alcohol=("alcohol", "max"),
     no_of_wines=("alcohol", "count"),
 )
 print(by_quality)
