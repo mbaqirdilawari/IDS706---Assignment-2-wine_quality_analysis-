@@ -1,4 +1,4 @@
-# IDS706---Assignment-1
+# IDS706---Assignment-2
 
 # Wine Quality Analysis
 
@@ -68,7 +68,6 @@ wine-quality-analysis/
 ├── requirements.txt
 └── README.md
 
-
 If you don't have the dataset yet, download it from the Kaggle link in the "Dataset" section above and place it in the `data/` folder.
 
 ### 5. Run the script
@@ -83,7 +82,7 @@ This runs every step of `analysis.py` from top to bottom: it loads the dataset, 
 
 ### 6. Check the output
 
-You don't need to run anything for this step — just look at what happened:
+You don't need to run anything for this step. Just look at what happened:
 
 - All the printed results (row counts, `.describe()` output, filter counts, group tables, model error and R-squared) appear directly in your **terminal**.
 - Two image **files** are created inside the `graphs/` folder: `graphs/quality_vs_alcohol.png` and `graphs/alcohol_vs_density.png`. Open these from VS Code's file explorer (or any image viewer) to see the charts.
@@ -92,9 +91,9 @@ You don't need to run anything for this step — just look at what happened:
 
 If you'd rather not type each command separately, this repo includes a `Makefile` with shortcuts. These also run in the **terminal**:
 
-- `make setup` — creates the virtual environment and installs the requirements (does steps 1–3 for you)
-- `make run` — runs the script (does step 5 for you)
-- `make clean` — deletes the generated charts and cached Python files, useful if you want a fresh run
+- `make setup` - creates the virtual environment and installs the requirements (does steps 1–3 for you)
+- `make run` - runs the script (does step 5 for you)
+- `make clean` - deletes the generated charts and cached Python files, useful if you want a fresh run
 
 ---
 
@@ -111,19 +110,9 @@ print(f"Total rows: {len(wine)}")
 print(wine["type"].value_counts())
 ```
 
-**Line by line:**
-- `wine = pd.read_csv("data/wine_quality_merged.csv")` — reads the CSV file from disk
-  and loads it into a DataFrame called `wine`. From this point on, `wine` is the table
-  every later step works from.
-- `print(f"Total rows: {len(wine)}")` — `len(wine)` counts how many rows the table has;
-  the f-string inserts that count directly into the printed sentence.
-- `print(wine["type"].value_counts())` — `wine["type"]` pulls out just the `type`
-  column; `.value_counts()` counts how many rows fall into each category (`"red"` vs
-  `"white"`).
-
 **What we found:** 
-*`The dataset has 6,497 wines total.`*
-*`4,898 white (about 75%) and 1,599 red (about 25%), so white wines make up the large majority of the combined file.`*
+*The dataset has 6,497 wines total.*
+*4,898 white (about 75%) and 1,599 red (about 25%), so white wines make up the large majority of the combined file.*
 
 ---
 
@@ -131,7 +120,7 @@ print(wine["type"].value_counts())
 
 **What this step does:** 
 Looks at the data's structure and health before doing any
-real analysis — what the columns look like, what type of data each holds, and whether
+real analysis. What the columns look like, what type of data each holds, and whether
 anything is missing or duplicated.
 
 ```python
@@ -143,21 +132,6 @@ print(wine.isnull().sum())
 print(f"Duplicate rows: {wine.duplicated().sum()}")
 ```
 
-**Line by Line:**
-- `print(wine.head())` — shows the first 5 rows, for a quick sanity check.
-- `print(wine.info())` — `.info()` prints a summary of every column (name, non-null
-  count, data type) by itself; wrapping it in `print()` additionally prints the word
-  `None` right after, since `.info()` returns nothing — that stray `None` is harmless
-  and can be ignored (or avoided by calling `wine.info()` on its own line without
-  `print()`).
-- `print(wine.describe())` — for every numeric column, computes count, mean, standard
-  deviation, min, the 25th/50th/75th percentiles, and max.
-- `print("Missing values:")` — a plain label so the next line's output is easy to read.
-- `print(wine.isnull().sum())` — `.isnull()` marks every blank cell as `True`;
-  `.sum()` adds those up per column, giving a missing-value count for each one.
-- `print(f"Duplicate rows: {wine.duplicated().sum()}")` — `.duplicated()` flags rows
-  that are exact copies of an earlier row; `.sum()` counts how many.
-
 **What we found:** 
 *No column has any missing values. Every one of the 13 columns shows 0 missing across all 6,497 rows.*
 *There are, however, 1,177 exact duplicate rows (about 18% of the dataset), rows that repeat another row's values identically.* 
@@ -167,7 +141,8 @@ print(f"Duplicate rows: {wine.duplicated().sum()}")
 
 ### Step 3: Filtering
 
-**What this step does:** Pulls out five different meaningful subsets of the data,
+**What this step does:** 
+Pulls out five different meaningful subsets of the data,
 using `.query()` to write each condition as plain text. This shows filtering on a
 single numeric range, a combined range, and combined conditions across two columns
 (type *and* alcohol) at once.
@@ -179,24 +154,6 @@ medium_quality = wine.query("quality > 4 and quality < 7")
 high_alcohol_red = wine.query("type == 'red' and alcohol > 12")
 low_alcohol_red = wine.query("type == 'red' and alcohol < 10")
 ```
-
-**Line by Line:**
-- `high_quality = wine.query("quality >= 7")` — keeps only rows where `quality` is 7
-  or higher: the "good" wines.
-- `bad_quality = wine.query("quality <= 4")` — keeps only rows where `quality` is 4 or
-  lower: the "bad" wines.
-- `medium_quality = wine.query("quality > 4 and quality < 7")` — keeps rows strictly
-  between 4 and 7, i.e. quality scores of 5 or 6: the "average" wines. The `and`
-  combines two conditions into one filter.
-- `high_alcohol_red = wine.query("type == 'red' and alcohol > 12")` — combines a
-  condition on one column (`type`) with a condition on a different column (`alcohol`)
-  in the same filter, keeping only red wines above 12% alcohol.
-- `low_alcohol_red = wine.query("type == 'red' and alcohol < 10")` — same idea, red
-  wines below 10% alcohol, for comparison against the high-alcohol group above.
-
-Each filtered result is followed by a `print(f"... {len(...)} out of {len(wine)}")`
-line (counting how many rows passed) and a `.head()` preview of the `type`, `alcohol`,
-and `quality` columns for those rows.
 
 **What we found:** 
 If we consider alcohol quality, out of 6,497 wines: 
@@ -214,8 +171,9 @@ Secondly, among red wines specifically:
 
 ### Step 4: Grouping
 
-**What this step does:** Splits the dataset into groups and computes summary
-statistics for each group — first by wine type, then by quality score.
+**What this step does:** 
+Splits the dataset into groups and computes summary
+statistics for each group. First by wine type, and then by quality score.
 
 ```python
 by_type = wine.groupby("type").agg(
@@ -230,31 +188,19 @@ by_quality = wine.groupby("quality").agg(
 )
 ```
 
-**Line by line:**
-- `wine.groupby("type")` — splits the table into two piles: all `"red"` rows and all
-  `"white"` rows.
-- `.agg(avg_alcohol=("alcohol", "mean"), avg_quality=("quality", "mean"),
-  no_of_wines=("quality", "count"))` — for each pile, computes three things at once and
-  names each result column: the average alcohol (`avg_alcohol`), the average quality
-  (`avg_quality`), and how many rows are in that pile (`no_of_wines`, computed by
-  counting the non-blank `quality` values — since every row has one, this is just the
-  row count for that group).
-- `wine.groupby("quality")` — same idea, but the piles are formed by quality score
-  (all the 3s, all the 4s, and so on) instead of by type.
-- `.agg(avg_alcohol=("alcohol", "mean"), no_of_wines=("alcohol", "count"))` — for each
-  quality score, the average alcohol content and how many wines got that score.
-
 **What we found:** 
 *White wines average a slightly higher quality score than red (5.88 vs. 5.64) despite very similar average alcohol content (10.51% vs. 10.42%).*
 *White also shows more variation in alcohol (std 1.23 vs. 1.07).* 
-*The alcohol-by-quality relationship isn't perfectly straight-line: quality scores 3 and 4 actually have slightly higher average alcohol (10.2%) than quality 5 (9.8%, the lowest point in the table), but from quality 5 upward the trend climbs steadily and clearly — 9.8% → 10.6% → 11.4% → 11.7% → 12.2% across quality 5 through 9. Overall, higher-quality wines do tend to have more alcohol, especially in the upper half of the range.*
+*The alcohol-by-quality relationship isn't perfectly straight-line: quality scores 3 and 4 actually have slightly higher average alcohol (10.2%) than quality 5 (9.8%, the lowest point in the table), but from quality 5 upward the trend climbs steadily and clearly:* 
+*9.8% → 10.6% → 11.4% → 11.7% → 12.2% across quality 5 through 9. Overall, higher-quality wines do tend to have more alcohol, especially in the upper half of the range.*
 
 ---
 
-### Step 5: Machine learning model
+### Step 5: Machine Learning model
 
-**What this step does:** Trains a Linear Regression model — the simplest predictive
-model there is — to predict a wine's quality score from three of its chemical
+**What this step does:** 
+Trains a Linear Regression model, the simplest predictive
+model there is. To predict a wine's quality score from three of its chemical
 properties, then measures how good its predictions were on data it never saw during
 training.
 
@@ -275,29 +221,6 @@ mse = mean_squared_error(y_test, predictions)
 r2 = r2_score(y_test, predictions)
 ```
 
-**Line by line:**
-- `features = ["alcohol", "volatile acidity", "sulphates"]` — the three columns chosen
-  as inputs to the model.
-- `X = wine[features]` — the inputs table (capital `X` is the standard name for
-  "inputs" in machine learning code).
-- `y = wine["quality"]` — the correct answers (lowercase `y` is the standard name for
-  "target").
-- `train_test_split(X, y, test_size=0.2, random_state=42)` — randomly splits the rows
-  into 80% for training (`X_train`, `y_train`) and 20% for testing (`X_test`,
-  `y_test`). `random_state=42` makes the split reproducible — running this again gives
-  the exact same split rather than a new random one.
-- `model = LinearRegression()` — creates a blank, untrained model.
-- `model.fit(X_train, y_train)` — the learning step: the model works out the
-  mathematical relationship between the training inputs and their correct answers.
-- `predictions = model.predict(X_test)` — asks the trained model to guess the quality
-  of the test wines, which it has never seen.
-- `mean_squared_error(y_test, predictions)` — measures how far off the guesses were
-  from the real answers, on average (squared, so bigger misses count more). Lower is
-  better.
-- `r2_score(y_test, predictions)` — measures what fraction of the variation in quality
-  the model explains, from 0 (no better than guessing the average every time) to 1
-  (perfect).
-
 Each feature's learned coefficient is then printed with a loop:
 ```python
 for feature, coef in zip(features, model.coef_):
@@ -317,38 +240,30 @@ too"; negative means the opposite.
 
 ---
 
-### Step 6: Visualization — Boxplot
+### Step 6: Visualization - Boxplot
 
 **What this step does:** 
-*Draws a boxplot comparing alcohol content across quality scores, split by wine type.*
+Draws a boxplot comparing alcohol content across quality scores, split by wine type.
 
 ```python
 sns.boxplot(data=wine, x="quality", y="alcohol", hue="type")
 ```
 
-**Why alcohol and quality:** Alcohol is one of the three features the model above uses
+**Why alcohol and quality:** 
+Alcohol is one of the three features the model above uses
 to predict quality, so this chart lets you *see* that relationship directly instead of
-just reading a coefficient. `hue="type"` adds a second comparison for free — red vs.
-white — on the same chart.
-
-**Line by line:**
-- `plt.figure(figsize=(10, 6))` — starts a blank chart canvas, 10 by 6 inches.
-- `sns.boxplot(data=wine, x="quality", y="alcohol", hue="type")` — one box per quality
-  score on the x-axis, showing the spread of alcohol values (y-axis) for wines with
-  that score; `hue="type"` splits each box into a red-wine box and a white-wine box
-  side by side.
-- `plt.title(...)`, `plt.xlabel(...)`, `plt.ylabel(...)` — label the chart and axes.
-- `plt.tight_layout()` — adjusts spacing so nothing overlaps or gets cut off.
-- `plt.savefig("quality_vs_alcohol.png", dpi=150)` — saves the chart as an image file.
+just reading a coefficient. `hue="type"` adds a second comparison for free - red vs.
+white - on the same chart.
 
 **What we found:** 
 *The boxplot's pattern matches the by_quality numbers above: alcohol content generally climbs as quality score increases, most clearly from quality 5 onward, and the trend looks broadly similar for red and white, though white's boxes show a bit more spread at the low end.*
 
 ---
 
-### Step 7: Visualization — Scatter Plot
+### Step 7: Visualization - Scatter Plot
 
-**What this step does:** Adds a second chart, this time comparing two continuous
+**What this step does:** 
+Adds a second chart, this time comparing two continuous
 chemical properties directly against each other rather than against the discrete
 quality score.
 
@@ -365,7 +280,7 @@ print("Scatter plot with trend line saved as alcohol_vs_density.png")
 
 **Why alcohol and density (and not quality again):** 
 `quality` only takes whole numbers from 3 to 9, so a scatter plot with `quality` on an axis produces vertical
-stripes of points rather than a smooth cloud — a boxplot (Step 6) is the better tool
+stripes of points rather than a smooth cloud. A boxplot (Step 6) is the better tool
 for that comparison. Alcohol and density are both continuous measurements, and wine
 chemistry gives a real reason to expect a relationship between them: alcohol is less
 dense than water, so wines with more alcohol tend to have lower density. That makes
@@ -373,36 +288,20 @@ this pair a clearer, more classic example of what a scatter plot is for. This ve
 also combines red and white into one group rather than splitting by `hue="type"`, to
 show the overall trend across every wine at once.
 
-**Line by line:**
-- `plt.figure(figsize=(10, 6))` — new blank chart canvas.
-- `sns.regplot(data=wine, x="alcohol", y="density", scatter_kws={"alpha": 0.3},
-  line_kws={"color": "red"})` — plots one point per wine (alcohol on the x-axis,
-  density on the y-axis) and additionally fits a straight trend line through all of
-  them using linear regression under the hood — the same core idea as Step 5's model,
-  just applied to two variables and drawn directly on the chart instead of printed as
-  numbers. `scatter_kws={"alpha": 0.3}` makes the dots partly transparent (so
-  overlapping points, of which there are thousands, show up as darker patches instead
-  of a solid blob); `line_kws={"color": "red"}` makes the trend line red so it stands
-  out against the dots. `regplot` also draws a shaded band around the line showing its
-  uncertainty.
-- `plt.title(...)`, `plt.xlabel(...)`, `plt.ylabel(...)` — label the chart and axes.
-- `plt.tight_layout()` — fixes spacing.
-- `plt.savefig("alcohol_vs_density.png", dpi=150)` — saves the chart as an image file.
-- `print(...)` — confirms the file was saved.
-
 **What we found:** 
 *The scatter plot shows a clear inverse relationship.*
 *As alcohol content goes up, density tends to go down. The red trend line slopes downward across the whole range, confirming this. Most points are tightly packed in a diagonal band between about 8–14% alcohol and a density of 0.99–1.00, which makes sense chemically: alcohol is less dense than water, so wines with more alcohol are naturally less dense.*
 *There are a few outliers worth noting though. One wine near 11.5% alcohol has an unusually high density (about 1.04), and one near 8.8% alcohol sits at about 1.01, both well above the rest of the cloud. Aside from those outliers, the relationship is fairly consistent and fits a straight line reasonably well, though the points do fan out a bit more at the lower end of alcohol content than at the higher end. Check out graphs/alcohol_vs_density.png yourself below and confirm.*
 
-
 ---
 
 ## Overall Findings
 
-*`[FILL IN once the numbers above are in: 2-4 sentences tying it together — e.g. which
-wine type tends to score higher, what predicts quality best, and whether a 3-feature
-linear model is good enough or too simple.]`*
+*Across the dataset, white wines slightly outperform red on average quality (5.88 vs. 5.64), despite nearly identical average alcohol.* 
+*Alcohol content is genuinely useful for predicting quality, visible both in the by_quality trend and in the regression model.*
+*However, volatile acidity matters more, and in the opposite direction: it's the strongest single predictor of lower quality among the three features tested. The 3-feature linear model captures a real signal (R² = 0.253) but is far from complete, which makes sense, since wine quality is a subjective taster's judgment shaped by more factors than alcohol, volatile acidity, and sulphates alone.*
+*A model with more features or a non-linear algorithm would likely do meaningfully better.*
+
 
 ## Next Steps (for later weeks)
 
