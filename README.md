@@ -2,11 +2,17 @@
 
 # Wine Quality Analysis
 
-## About this Project
+## Project Goal
 
-This is Series 1 of a 3-week data science project for IDS 706 (Data Engineering). The
-goal is to practice the fundamentals: loading a real dataset, inspecting it,
-filtering and grouping it, training a first machine learning model, and visualizing it.
+This project is focused on practicing the core fundamentals of data analysis using Python and Pandas. Using a real, publicly available dataset, the goal is to work through the full basic workflow a Data Scientist would follow: 
+- Loading raw data into a DataFrame
+- Inspecting it to understand its structure and quality (data types, missing values, duplicates)
+- Filtering and grouping it to answer specific questions about the data
+- Training a simple machine learning model to see how well a few variables can predict an
+outcome
+- Visualizing the results through different types of charts. 
+
+The emphasis throughout is on understanding *why* each step matters, not just running the code.
 
 ## The Dataset
 
@@ -248,6 +254,7 @@ too"; negative means the opposite.
 **What we found:** 
 
 *The model's Mean Squared Error was 0.551 and R-squared was 0.253*
+
 *These three features (alcohol, volatile acidity, sulphates) explain about 25% of the variation in quality, a real but modest amount, since quality clearly depends on more than three chemical measurements.* 
 
 - *Volatile acidity had by far the strongest effect (coefficient −1.466): as it increases, predicted quality drops sharply, consistent with volatile acidity being linked to a vinegar-like taste.* 
@@ -330,3 +337,11 @@ show the overall trend across every wine at once.
   Forest).
 - Compare Pandas performance against Polars on this same dataset.
 - Add tests and set up continuous integration (CI) for this script.
+
+
+Add images of graphs to the readme file
+Make a table of contents
+Things we should have worked on (check from Kedar's work)
+
+Why the specific plot?
+What we got out of it?
