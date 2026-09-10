@@ -11,6 +11,7 @@ filtering and grouping it, training a first machine learning model, and visualiz
 ## The Dataset
 
 **Wine Quality (Red and White)**, sourced from Kaggle:
+
 https://www.kaggle.com/datasets/amirmohamadrezaie/red-and-white-wine-quality
 
 The file `data/wine_quality_merged.csv` contains both red and white wine samples
