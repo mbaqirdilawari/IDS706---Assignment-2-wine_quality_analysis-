@@ -107,6 +107,7 @@ If you'd rather not type each command separately, this repo includes a `Makefile
 ### Step 1: Importing the dataset
 
 **What this step does:** 
+
 Loads the single merged CSV file into a pandas DataFrame (a table) and takes a first look at how the two wine types are represented in it.
 
 ```python
@@ -116,6 +117,7 @@ print(wine["type"].value_counts())
 ```
 
 **What we found:** 
+
 *The dataset has 6,497 wines total.*
 *4,898 white (about 75%) and 1,599 red (about 25%), so white wines make up the large majority of the combined file.*
 
@@ -124,6 +126,7 @@ print(wine["type"].value_counts())
 ### Step 2: Inspecting the Data
 
 **What this step does:** 
+
 Looks at the data's structure and health before doing any
 real analysis. What the columns look like, what type of data each holds, and whether
 anything is missing or duplicated.
@@ -138,6 +141,7 @@ print(f"Duplicate rows: {wine.duplicated().sum()}")
 ```
 
 **What we found:** 
+
 *No column has any missing values. Every one of the 13 columns shows 0 missing across all 6,497 rows.*
 *There are, however, 1,177 exact duplicate rows (about 18% of the dataset), rows that repeat another row's values identically.* 
 *.describe() shows that most chemical measurements are fairly tight (e.g. alcohol ranges from 8.0% to 14.9%, averaging 10.49%), but residual sugar is heavily skewed: its 75th percentile is 8.1 but its maximum is 65.8, meaning a small number of unusually sweet wines pull the average up.*
@@ -147,6 +151,7 @@ print(f"Duplicate rows: {wine.duplicated().sum()}")
 ### Step 3: Filtering
 
 **What this step does:** 
+
 Pulls out five different meaningful subsets of the data,
 using `.query()` to write each condition as plain text. This shows filtering on a
 single numeric range, a combined range, and combined conditions across two columns
@@ -161,6 +166,7 @@ low_alcohol_red = wine.query("type == 'red' and alcohol < 10")
 ```
 
 **What we found:** 
+
 If we consider alcohol quality, out of 6,497 wines: 
 - 1,277 (about 20%) are high quality (score ≥ 7)
 - 246 (about 4%) are bad quality (score ≤ 4)
@@ -177,6 +183,7 @@ Secondly, among red wines specifically:
 ### Step 4: Grouping
 
 **What this step does:** 
+
 Splits the dataset into groups and computes summary
 statistics for each group. First by wine type, and then by quality score.
 
@@ -194,6 +201,7 @@ by_quality = wine.groupby("quality").agg(
 ```
 
 **What we found:** 
+
 *White wines average a slightly higher quality score than red (5.88 vs. 5.64) despite very similar average alcohol content (10.51% vs. 10.42%).*
 *White also shows more variation in alcohol (std 1.23 vs. 1.07).* 
 *The alcohol-by-quality relationship isn't perfectly straight-line: quality scores 3 and 4 actually have slightly higher average alcohol (10.2%) than quality 5 (9.8%, the lowest point in the table), but from quality 5 upward the trend climbs steadily and clearly:* 
@@ -204,6 +212,7 @@ by_quality = wine.groupby("quality").agg(
 ### Step 5: Machine Learning model
 
 **What this step does:** 
+
 Trains a Linear Regression model, the simplest predictive
 model there is. To predict a wine's quality score from three of its chemical
 properties, then measures how good its predictions were on data it never saw during
@@ -237,6 +246,7 @@ positive coefficient means "as this feature goes up, predicted quality tends to 
 too"; negative means the opposite.
 
 **What we found:** 
+
 *The model's Mean Squared Error was 0.551 and R-squared was 0.253*
 *These three features (alcohol, volatile acidity, sulphates) explain about 25% of the variation in quality, a real but modest amount, since quality clearly depends on more than three chemical measurements.* 
 
@@ -248,6 +258,7 @@ too"; negative means the opposite.
 ### Step 6: Visualization - Boxplot
 
 **What this step does:** 
+
 Draws a boxplot comparing alcohol content across quality scores, split by wine type.
 
 ```python
@@ -255,12 +266,14 @@ sns.boxplot(data=wine, x="quality", y="alcohol", hue="type")
 ```
 
 **Why alcohol and quality:** 
+
 Alcohol is one of the three features the model above uses
 to predict quality, so this chart lets you *see* that relationship directly instead of
 just reading a coefficient. `hue="type"` adds a second comparison for free - red vs.
 white - on the same chart.
 
 **What we found:** 
+
 *The boxplot's pattern matches the by_quality numbers above: alcohol content generally climbs as quality score increases, most clearly from quality 5 onward, and the trend looks broadly similar for red and white, though white's boxes show a bit more spread at the low end.*
 
 ---
@@ -268,6 +281,7 @@ white - on the same chart.
 ### Step 7: Visualization - Scatter Plot
 
 **What this step does:** 
+
 Adds a second chart, this time comparing two continuous
 chemical properties directly against each other rather than against the discrete
 quality score.
@@ -284,6 +298,7 @@ print("Scatter plot with trend line saved as alcohol_vs_density.png")
 ```
 
 **Why alcohol and density (and not quality again):** 
+
 `quality` only takes whole numbers from 3 to 9, so a scatter plot with `quality` on an axis produces vertical
 stripes of points rather than a smooth cloud. A boxplot (Step 6) is the better tool
 for that comparison. Alcohol and density are both continuous measurements, and wine
@@ -294,6 +309,7 @@ also combines red and white into one group rather than splitting by `hue="type"`
 show the overall trend across every wine at once.
 
 **What we found:** 
+
 *The scatter plot shows a clear inverse relationship.*
 *As alcohol content goes up, density tends to go down. The red trend line slopes downward across the whole range, confirming this. Most points are tightly packed in a diagonal band between about 8–14% alcohol and a density of 0.99–1.00, which makes sense chemically: alcohol is less dense than water, so wines with more alcohol are naturally less dense.*
 *There are a few outliers worth noting though. One wine near 11.5% alcohol has an unusually high density (about 1.04), and one near 8.8% alcohol sits at about 1.01, both well above the rest of the cloud. Aside from those outliers, the relationship is fairly consistent and fits a straight line reasonably well, though the points do fan out a bit more at the lower end of alcohol content than at the higher end. Check out graphs/alcohol_vs_density.png yourself below and confirm.*
