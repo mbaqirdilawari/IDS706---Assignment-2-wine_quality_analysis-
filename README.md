@@ -27,6 +27,7 @@ The emphasis throughout is on understanding *why* each step matters, not just ru
   - [Step 6: Visualization - Boxplot](#step-6-visualization---boxplot)
   - [Step 7: Visualization - Scatter Plot](#step-7-visualization---scatter-plot)
 - [Overall Findings](#overall-findings)
+- [Model Limitations and Future Directions](#model-limitations-and-future-directions)
 
 ## The Dataset
 
