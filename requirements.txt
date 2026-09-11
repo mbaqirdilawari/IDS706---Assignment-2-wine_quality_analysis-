@@ -1,4 +1,6 @@
 pandas
+polars
+pyarrow
 matplotlib
 seaborn
 scikit-learn

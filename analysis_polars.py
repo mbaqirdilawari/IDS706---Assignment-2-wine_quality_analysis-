@@ -1,6 +1,7 @@
 import shutil
 
 import pandas as pd
+import polars as pl
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
@@ -14,71 +15,101 @@ pd.set_option("display.max_columns", None)
 # column headers and values apart mid-word).
 pd.set_option("display.width", shutil.get_terminal_size(fallback=(120, 24)).columns)
 
+
+def show(df: pl.DataFrame) -> None:
+    """Print a Polars DataFrame using Pandas' wide-table formatting."""
+    print(df.to_pandas())
+
+
 # Step 1: Importing the dataset
-wine = pd.read_csv("data/wine_quality_merged.csv")
+wine = pl.read_csv("data/wine_quality_merged.csv")
 print(f"Total rows: {len(wine)}")
-print(wine["type"].value_counts())
+type_counts = wine["type"].value_counts().to_pandas().set_index("type")["count"]
+print(type_counts)
 
 print(" " " ")
 
 # Step 2: Inspecting the data
-print(wine.head())
-print(wine.info())
-print(wine.describe())
+show(wine.head())
+
+info_pd = pd.DataFrame(
+    {
+        "Column": wine.columns,
+        "Dtype": [str(dtype) for dtype in wine.dtypes],
+        "Non-Null Count": [
+            len(wine) - wine[col].null_count() for col in wine.columns
+        ],
+    }
+)
+print(info_pd.to_string(index=False))
+
+print(" " " ")
+
+# describe() on numeric columns only, oriented like pandas' describe()
+# (statistics as columns, data columns as rows)
+describe_pd = wine.select(pl.exclude("type")).describe().to_pandas()
+print(describe_pd.set_index("statistic").T)
+
+print(" " " ")
+
 print("Missing values:")
-print(wine.isnull().sum())
-print(f"Duplicate rows: {wine.duplicated().sum()}")
+null_counts = wine.null_count().to_pandas().iloc[0]
+null_counts.name = None
+print(null_counts)
+print(f"Duplicate rows: {wine.is_duplicated().sum()}")
 
 print(" " " ")
 
 # Step 3: Filtering
 
 # Filtering for high quality wines (quality >= 7)
-high_quality = wine.query("quality >= 7")
+high_quality = wine.filter(pl.col("quality") >= 7)
 print(f"High quality wines: {len(high_quality)} out of {len(wine)}")
-print(high_quality[["type", "alcohol", "quality"]].head())
+show(high_quality[["type", "alcohol", "quality"]].head())
 
 # Filtering for bad quality wines (quality <= 4)
-bad_quality = wine.query("quality <= 4")
+bad_quality = wine.filter(pl.col("quality") <= 4)
 print(f"Bad quality wines: {len(bad_quality)} out of {len(wine)}")
-print(bad_quality[["type", "alcohol", "quality"]].head())
+show(bad_quality[["type", "alcohol", "quality"]].head())
 
 # Filtering for medium quality wines (4 < quality < 7)
-medium_quality = wine.query("quality > 4 and quality < 7")
+medium_quality = wine.filter((pl.col("quality") > 4) & (pl.col("quality") < 7))
 print(f"Medium quality wines: {len(medium_quality)} out of {len(wine)}")
-print(medium_quality[["type", "alcohol", "quality"]].head())
+show(medium_quality[["type", "alcohol", "quality"]].head())
 
 # Filtering for red wines with alcohol content greater than 12%
-high_alcohol_red = wine.query("type == 'red' and alcohol > 12")
+high_alcohol_red = wine.filter((pl.col("type") == "red") & (pl.col("alcohol") > 12))
 print(f"High alcohol red wines: {len(high_alcohol_red)} out of {len(wine)}")
-print(high_alcohol_red[["type", "alcohol", "quality"]].head())
+show(high_alcohol_red[["type", "alcohol", "quality"]].head())
 
 # Filtering for red wines with alcohol content less than 10%
-low_alcohol_red = wine.query("type == 'red' and alcohol < 10")
+low_alcohol_red = wine.filter((pl.col("type") == "red") & (pl.col("alcohol") < 10))
 print(f"Low alcohol red wines: {len(low_alcohol_red)} out of {len(wine)}")
-print(low_alcohol_red[["type", "alcohol", "quality"]].head())
+show(low_alcohol_red[["type", "alcohol", "quality"]].head())
 
 print(" " " ")
 
 # Step 4: Grouping
-by_type = wine.groupby("type").agg(
-    avg_alcohol=("alcohol", "mean"),
-    std_alcohol=("alcohol", "std"),
-    min_alcohol=("alcohol", "min"),
-    max_alcohol=("alcohol", "max"),
-    avg_quality=("quality", "mean"),
-    no_of_wines=("quality", "count"),
-)
-print(by_type)
+by_type = wine.group_by("type").agg(
+    avg_alcohol=pl.col("alcohol").mean(),
+    std_alcohol=pl.col("alcohol").std(),
+    min_alcohol=pl.col("alcohol").min(),
+    max_alcohol=pl.col("alcohol").max(),
+    avg_quality=pl.col("quality").mean(),
+    no_of_wines=pl.col("quality").count(),
+).sort("type")
+show(by_type)
 
-by_quality = wine.groupby("quality").agg(
-    avg_alcohol=("alcohol", "mean"),
-    std_alcohol=("alcohol", "std"),
-    min_alcohol=("alcohol", "min"),
-    max_alcohol=("alcohol", "max"),
-    no_of_wines=("alcohol", "count"),
-)
-print(by_quality)
+print(" " " ")
+
+by_quality = wine.group_by("quality").agg(
+    avg_alcohol=pl.col("alcohol").mean(),
+    std_alcohol=pl.col("alcohol").std(),
+    min_alcohol=pl.col("alcohol").min(),
+    max_alcohol=pl.col("alcohol").max(),
+    no_of_wines=pl.col("alcohol").count(),
+).sort("quality")
+show(by_quality)
 
 print(" " " ")
 
@@ -86,8 +117,8 @@ print(" " " ")
 print("Machine Learning Model: Predicting Wine Quality")
 
 features = ["alcohol", "volatile acidity", "sulphates"]
-X = wine[features]
-y = wine["quality"]
+X = wine[features].to_numpy()
+y = wine["quality"].to_numpy()
 
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
@@ -109,9 +140,11 @@ for feature, coef in zip(features, model.coef_):
 print(" " " ")
 
 # Step 6: Visualization of Boxplot
+wine_pd = wine.to_pandas()
+
 plt.figure(figsize=(10, 6))
 sns.boxplot(
-    data=wine,
+    data=wine_pd,
     x="quality",
     y="alcohol",
     hue="type",
@@ -121,14 +154,14 @@ plt.title("Alcohol Content by Wine Quality Score")
 plt.xlabel("Quality Score")
 plt.ylabel("Alcohol (%)")
 plt.tight_layout()
-plt.savefig("graphs/quality_vs_alcohol.png", dpi=150)
-print("Boxplot is saved as quality_vs_alcohol.png")
+plt.savefig("graphs/quality_vs_alcohol_polars.png", dpi=150)
+print("Boxplot is saved as quality_vs_alcohol_polars.png")
 
 
 # Step 7: Visualization of Scatter Plot with Trend Line
 plt.figure(figsize=(10, 6))
 sns.regplot(
-    data=wine,
+    data=wine_pd,
     x="alcohol",
     y="density",
     scatter_kws={"alpha": 0.3},
@@ -138,5 +171,5 @@ plt.title("Alcohol Content vs. Density (All Wines)")
 plt.xlabel("Alcohol (%)")
 plt.ylabel("Density")
 plt.tight_layout()
-plt.savefig("graphs/alcohol_vs_density.png", dpi=150)
-print("Scatter plot with trend line saved as alcohol_vs_density.png")
+plt.savefig("graphs/alcohol_vs_density_polars.png", dpi=150)
+print("Scatter plot with trend line saved as alcohol_vs_density_polars.png")

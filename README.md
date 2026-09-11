@@ -14,6 +14,20 @@ outcome
 
 The emphasis throughout is on understanding *why* each step matters, not just running the code.
 
+## Table of Contents
+
+- [The Dataset](#the-dataset)
+- [How to Run](#how-to-run-this)
+- [Step by Step walkthrough](#step-by-step-walkthrough)
+  - [Step 1: Importing the dataset](#step-1-importing-the-dataset)
+  - [Step 2: Inspecting the Data](#step-2-inspecting-the-data)
+  - [Step 3: Filtering](#step-3-filtering)
+  - [Step 4: Grouping](#step-4-grouping)
+  - [Step 5: Machine Learning model](#step-5-machine-learning-model)
+  - [Step 6: Visualization - Boxplot](#step-6-visualization---boxplot)
+  - [Step 7: Visualization - Scatter Plot](#step-7-visualization---scatter-plot)
+- [Overall Findings](#overall-findings)
+
 ## The Dataset
 
 **Wine Quality (Red and White)**, sourced from Kaggle:
@@ -329,7 +343,9 @@ making this pair a clearer, more classic example of what a scatter plot is for.
 
 *The scatter plot shows a clear inverse relationship.*
 *As alcohol content goes up, density tends to go down. The red trend line slopes downward across the whole range, confirming this. Most points are tightly packed in a diagonal band between about 8–14% alcohol and a density of 0.99–1.00, which makes sense chemically: alcohol is less dense than water, so wines with more alcohol are naturally less dense.*
-*There are a few outliers worth noting though. One wine near 11.5% alcohol has an unusually high density (about 1.04), and one near 8.8% alcohol sits at about 1.01, both well above the rest of the cloud. Aside from those outliers, the relationship is fairly consistent and fits a straight line reasonably well, though the points do fan out a bit more at the lower end of alcohol content than at the higher end. Check out graphs/alcohol_vs_density.png yourself below and confirm.*
+*There are a few outliers worth noting though. One wine near 11.5% alcohol has an unusually high density (about 1.04), and one near 8.8% alcohol sits at about 1.01, both well above the rest of the cloud. Aside from those outliers, the relationship is fairly consistent and fits a straight line reasonably well, though the points do fan out a bit more at the lower end of alcohol content than at the higher end.* 
+
+*Check out alcohol_vs_density yourself below and confirm.*
 
 ![Alcohol Content vs. Density (All Wines)](graphs/alcohol_vs_density.png)
 
@@ -343,16 +359,16 @@ making this pair a clearer, more classic example of what a scatter plot is for.
 *A model with more features or a non-linear algorithm would likely do meaningfully better.*
 
 
-## Next Steps (for later weeks)
+## Model Limitations and Future Directions
 
-- Try more features in the regression model, or a different algorithm (e.g., Random
-  Forest).
-- Compare Pandas performance against Polars on this same dataset.
-- Add tests and set up continuous integration (CI) for this script.
+- **Only 3 of the 11 available chemical features were used, capping R² at 0.253.** 
 
+Alcohol, volatile acidity, and sulphates explain just a quarter of the variance in quality. Training on the full feature set, or a non-linear algorithm would likely capture more of the signal the linear model is currently missing.
 
-Make a table of contents
-Things we should have worked on (check from Kedar's work)
+- **The 1,177 duplicate rows identified in Step 2 were never removed before training.** 
 
-Why the specific plot?
-What we got out of it?
+Since the train/test split was done on the full dataset, repeated rows could land in both sets, letting the model partly "memorize" wines instead of generalizing. Deduplicating before the split would give a more honest estimate of real-world performance.
+
+- **Quality was modeled as a continuous number, but it's really an ordinal score from 3-9 assigned by human tasters.** 
+
+Linear regression can predict values like 5.4 that don't correspond to any real score, and treats a 1-point miss the same everywhere on the scale. An ordinal regression or classification approach would match the actual structure of the target variable more closely.
