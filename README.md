@@ -276,12 +276,17 @@ sns.boxplot(data=wine, x="quality", y="alcohol", hue="type")
 
 Alcohol is one of the three features the model above uses
 to predict quality, so this chart lets you *see* that relationship directly instead of
-just reading a coefficient. `hue="type"` adds a second comparison for free - red vs.
-white - on the same chart.
+just reading a coefficient. `hue="type"` adds a second comparison for free - red vs. white - on the same chart.
+
+**Why a boxplot?** 
+
+`quality` only takes a handful of whole-number values (3-9), so it behaves like a category rather than a continuous number. A boxplot is built for exactly that: it groups the continuous variable (alcohol) by each discrete category (quality score) and shows the median, spread, and outliers for every group side by side, which a scatter plot can't do cleanly with so few x-values.
 
 **What we found:** 
 
 *The boxplot's pattern matches the by_quality numbers above: alcohol content generally climbs as quality score increases, most clearly from quality 5 onward, and the trend looks broadly similar for red and white, though white's boxes show a bit more spread at the low end.*
+
+![Alcohol Content by Wine Quality Score](graphs/quality_vs_alcohol.png)
 
 ---
 
@@ -320,6 +325,8 @@ show the overall trend across every wine at once.
 *The scatter plot shows a clear inverse relationship.*
 *As alcohol content goes up, density tends to go down. The red trend line slopes downward across the whole range, confirming this. Most points are tightly packed in a diagonal band between about 8–14% alcohol and a density of 0.99–1.00, which makes sense chemically: alcohol is less dense than water, so wines with more alcohol are naturally less dense.*
 *There are a few outliers worth noting though. One wine near 11.5% alcohol has an unusually high density (about 1.04), and one near 8.8% alcohol sits at about 1.01, both well above the rest of the cloud. Aside from those outliers, the relationship is fairly consistent and fits a straight line reasonably well, though the points do fan out a bit more at the lower end of alcohol content than at the higher end. Check out graphs/alcohol_vs_density.png yourself below and confirm.*
+
+![Alcohol Content vs. Density (All Wines)](graphs/alcohol_vs_density.png)
 
 ---
 
