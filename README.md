@@ -8,11 +8,15 @@ This project is focused on practicing the core fundamentals of data analysis usi
 - Loading raw data into a DataFrame
 - Inspecting it to understand its structure and quality (data types, missing values, duplicates)
 - Filtering and grouping it to answer specific questions about the data
-- Training a simple machine learning model to see how well a few variables can predict an
-outcome
+- Training a simple machine learning model to see how well a few variables can predict an outcome
 - Visualizing the results through different types of charts. 
 
 The emphasis throughout is on understanding *why* each step matters, not just running the code.
+
+
+You can run it through pandas via the `"analysis.py"` file. Pandas is the widely-supported default with the biggest ecosystem.
+
+Or you can run it through polars via the `"analysis_polars.py"` file. Polars are used when speed and memory efficiency is the priority for larger sets of data.
 
 ## Table of Contents
 
@@ -375,10 +379,12 @@ making this pair a clearer, more classic example of what a scatter plot is for.
 
 ## Pandas vs Polars Benchmark
 
-The last step of `analysis_polars.py` times four operations shared by both
-scripts - reading the CSV, `.head()`, filtering for `quality >= 7`, and a
-`groupby`/`group_by` mean of alcohol by type - running each 20 times in both
-Pandas and Polars, keeping the fastest run to cut down on noise.
+The last step of `analysis_polars.py` file, is a small speed test: it picks four
+everyday operations already used elsewhere in this project (reading the CSV,
+previewing rows, filtering, grouping) and times how long each one takes in
+Pandas versus Polars. Each operation is run 20 times and only the fastest run
+is kept, since a single run can be thrown off by things like a slow disk read
+or Python still warming up.
 
 ```python
 benchmark_results["pandas"]["CSV Read"] = best_of(lambda: pd.read_csv("data/wine_quality_merged.csv"))
@@ -391,7 +397,7 @@ benchmark_results["polars"]["CSV Read"] = best_of(lambda: pl.read_csv("data/wine
 *But for `.head()`, filtering, and the groupby, Pandas is as fast or faster than Polars. This is the opposite of what "Polars is faster" would predict, and it comes down to dataset size: the wine dataset has only 6,497 rows. Polars is built around a query-planning and multithreading engine that carries fixed per-call overhead, which pays off on large datasets by parallelizing work across cores, but on a dataset this small that overhead outweighs the actual computation, which Pandas can just do directly in a single tight loop.*
 *In short: for a dataset this size, the choice between Pandas and Polars barely matters for speed. Polars' advantage should grow as the dataset grows into the millions of rows, since that's where its parallel, lazy-evaluation engine starts to amortize its overhead, but that's not something this ~6,500-row dataset can demonstrate.*
 
-You can run the benchmark yourself (it's the last step of the script):
+Run the benchmark (it's the last step of the script):
 
 ```bash
 python analysis_polars.py
