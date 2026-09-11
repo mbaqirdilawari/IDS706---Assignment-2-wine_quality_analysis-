@@ -311,14 +311,19 @@ print("Scatter plot with trend line saved as alcohol_vs_density.png")
 
 **Why alcohol and density (and not quality again):** 
 
-`quality` only takes whole numbers from 3 to 9, so a scatter plot with `quality` on an axis produces vertical
-stripes of points rather than a smooth cloud. A boxplot (Step 6) is the better tool
-for that comparison. Alcohol and density are both continuous measurements, and wine
+Alcohol and density are both continuous measurements, and wine
 chemistry gives a real reason to expect a relationship between them: alcohol is less
-dense than water, so wines with more alcohol tend to have lower density. That makes
-this pair a clearer, more classic example of what a scatter plot is for. This version
+dense than water, so wines with more alcohol tend to have lower density. This version
 also combines red and white into one group rather than splitting by `hue="type"`, to
 show the overall trend across every wine at once.
+
+**Why a scatter plot?** 
+
+`quality` only takes whole numbers from 3 to 9, so a scatter plot with `quality` on an axis produces vertical
+stripes of points rather than a smooth cloud. A boxplot (Step 6) is the better tool
+for that comparison. Alcohol and density, on the other hand, are both continuous, so
+plotting one against the other produces a smooth cloud of points rather than stripes -
+making this pair a clearer, more classic example of what a scatter plot is for.
 
 **What we found:** 
 
@@ -346,7 +351,6 @@ show the overall trend across every wine at once.
 - Add tests and set up continuous integration (CI) for this script.
 
 
-Add images of graphs to the readme file
 Make a table of contents
 Things we should have worked on (check from Kedar's work)
 

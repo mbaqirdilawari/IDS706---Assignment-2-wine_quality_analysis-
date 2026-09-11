@@ -104,7 +104,13 @@ print(" " " ")
 
 # Step 6: Visualization of Boxplot
 plt.figure(figsize=(10, 6))
-sns.boxplot(data=wine, x="quality", y="alcohol", hue="type")
+sns.boxplot(
+    data=wine,
+    x="quality",
+    y="alcohol",
+    hue="type",
+    palette={"red": "firebrick", "white": "wheat"},
+)
 plt.title("Alcohol Content by Wine Quality Score")
 plt.xlabel("Quality Score")
 plt.ylabel("Alcohol (%)")
