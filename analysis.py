@@ -8,10 +8,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 pd.set_option("display.max_columns", None)
-# Detect the terminal width ourselves: pandas' own auto-detection
-# (display.width=None) doesn't always find it, which leaves wide tables
-# unwrapped and at the mercy of the terminal's raw line-wrapping (breaking
-# column headers and values apart mid-word).
 pd.set_option("display.width", shutil.get_terminal_size(fallback=(120, 24)).columns)
 
 # Step 1: Importing the dataset
@@ -23,7 +19,7 @@ print(" " " ")
 
 # Step 2: Inspecting the data
 print(wine.head())
-print(wine.info())
+wine.info()
 print(wine.describe())
 print("Missing values:")
 print(wine.isnull().sum())

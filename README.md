@@ -27,6 +27,7 @@ The emphasis throughout is on understanding *why* each step matters, not just ru
   - [Step 6: Visualization - Boxplot](#step-6-visualization---boxplot)
   - [Step 7: Visualization - Scatter Plot](#step-7-visualization---scatter-plot)
 - [Overall Findings](#overall-findings)
+- [Pandas vs Polars Benchmark](#pandas-vs-polars-benchmark)
 - [Model Limitations and Future Directions](#model-limitations-and-future-directions)
 
 ## The Dataset
@@ -76,7 +77,7 @@ Run this in the **terminal** (with the virtual environment still active):
 pip install -r requirements.txt
 ```
 
-This reads the `requirements.txt` file in this repo and installs the four libraries the script needs: `pandas`, `matplotlib`, `seaborn`, and `scikit-learn`.
+This reads the `requirements.txt` file in this repo and installs the libraries both scripts need: `pandas`, `polars`, `pyarrow`, `matplotlib`, `seaborn`, and `scikit-learn`.
 
 ### 4. Add the dataset
 
@@ -86,6 +87,7 @@ Make sure `wine_quality_merged.csv` is placed inside a folder named `data/`, sit
 ```
 wine-quality-analysis/
 ├── analysis.py
+├── analysis_polars.py
 ├── data/
 │   └── wine_quality_merged.csv
 ├── graphs/
@@ -106,19 +108,29 @@ python analysis.py
 
 This runs every step of `analysis.py` from top to bottom: it loads the dataset, prints inspection details, prints the filtering and grouping results, trains the model and prints its performance, and finally saves two charts.
 
+There's also `analysis_polars.py`, which does the exact same analysis and produces the same
+results using [Polars](https://pola.rs/) instead of Pandas, plus a Pandas-vs-Polars speed
+benchmark as a final step (see the [Pandas vs Polars Benchmark](#pandas-vs-polars-benchmark)
+section below). Run it the same way:
+
+```bash
+python analysis_polars.py
+```
+
 ### 6. Check the output
 
 You don't need to run anything for this step. Just look at what happened:
 
 - All the printed results (row counts, `.describe()` output, filter counts, group tables, model error and R-squared) appear directly in your **terminal**.
-- Two image **files** are created inside the `graphs/` folder: `graphs/quality_vs_alcohol.png` and `graphs/alcohol_vs_density.png`. Open these from VS Code's file explorer (or any image viewer) to see the charts.
+- `analysis.py` creates two image **files** inside the `graphs/` folder: `graphs/quality_vs_alcohol.png` and `graphs/alcohol_vs_density.png`. `analysis_polars.py` creates the Polars equivalents (`graphs/quality_vs_alcohol_polars.png`, `graphs/alcohol_vs_density_polars.png`) plus `graphs/pandas_vs_polars_benchmark.png`. Open these from VS Code's file explorer (or any image viewer) to see the charts.
 
 ### Optional: using the Makefile shortcuts
 
 If you'd rather not type each command separately, this repo includes a `Makefile` with shortcuts. These also run in the **terminal**:
 
 - `make setup` - creates the virtual environment and installs the requirements (does steps 1–3 for you)
-- `make run` - runs the script (does step 5 for you)
+- `make run` - runs `analysis.py` (does step 5 for you)
+- `make run-polars` - runs `analysis_polars.py`, the Polars version plus the benchmark
 - `make clean` - deletes the generated charts and cached Python files, useful if you want a fresh run
 
 ---
@@ -154,7 +166,7 @@ anything is missing or duplicated.
 
 ```python
 print(wine.head())
-print(wine.info())
+wine.info()
 print(wine.describe())
 print("Missing values:")
 print(wine.isnull().sum())
@@ -359,6 +371,35 @@ making this pair a clearer, more classic example of what a scatter plot is for.
 *However, volatile acidity matters more, and in the opposite direction: it's the strongest single predictor of lower quality among the three features tested. The 3-feature linear model captures a real signal (R² = 0.253) but is far from complete, which makes sense, since wine quality is a subjective taster's judgment shaped by more factors than alcohol, volatile acidity, and sulphates alone.*
 *A model with more features or a non-linear algorithm would likely do meaningfully better.*
 
+---
+
+## Pandas vs Polars Benchmark
+
+The last step of `analysis_polars.py` times four operations shared by both
+scripts - reading the CSV, `.head()`, filtering for `quality >= 7`, and a
+`groupby`/`group_by` mean of alcohol by type - running each 20 times in both
+Pandas and Polars, keeping the fastest run to cut down on noise.
+
+```python
+benchmark_results["pandas"]["CSV Read"] = best_of(lambda: pd.read_csv("data/wine_quality_merged.csv"))
+benchmark_results["polars"]["CSV Read"] = best_of(lambda: pl.read_csv("data/wine_quality_merged.csv"))
+```
+
+**Findings:**
+
+*Polars reads the CSV about 3x faster than Pandas (0.00058s vs 0.00174s), which matches Polars' reputation for a faster, multithreaded, Rust-based CSV parser.*
+*But for `.head()`, filtering, and the groupby, Pandas is as fast or faster than Polars. This is the opposite of what "Polars is faster" would predict, and it comes down to dataset size: the wine dataset has only 6,497 rows. Polars is built around a query-planning and multithreading engine that carries fixed per-call overhead, which pays off on large datasets by parallelizing work across cores, but on a dataset this small that overhead outweighs the actual computation, which Pandas can just do directly in a single tight loop.*
+*In short: for a dataset this size, the choice between Pandas and Polars barely matters for speed. Polars' advantage should grow as the dataset grows into the millions of rows, since that's where its parallel, lazy-evaluation engine starts to amortize its overhead, but that's not something this ~6,500-row dataset can demonstrate.*
+
+You can run the benchmark yourself (it's the last step of the script):
+
+```bash
+python analysis_polars.py
+```
+
+![Pandas vs Polars Benchmark](graphs/pandas_vs_polars_benchmark.png)
+
+---
 
 ## Model Limitations and Future Directions
 

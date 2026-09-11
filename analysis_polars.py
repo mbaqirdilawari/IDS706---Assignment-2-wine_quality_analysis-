@@ -1,4 +1,5 @@
 import shutil
+import time
 
 import pandas as pd
 import polars as pl
@@ -9,10 +10,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 pd.set_option("display.max_columns", None)
-# Detect the terminal width ourselves: pandas' own auto-detection
-# (display.width=None) doesn't always find it, which leaves wide tables
-# unwrapped and at the mercy of the terminal's raw line-wrapping (breaking
-# column headers and values apart mid-word).
 pd.set_option("display.width", shutil.get_terminal_size(fallback=(120, 24)).columns)
 
 
@@ -36,17 +33,14 @@ info_pd = pd.DataFrame(
     {
         "Column": wine.columns,
         "Dtype": [str(dtype) for dtype in wine.dtypes],
-        "Non-Null Count": [
-            len(wine) - wine[col].null_count() for col in wine.columns
-        ],
+        "Non-Null Count": [len(wine) - wine[col].null_count() for col in wine.columns],
     }
 )
 print(info_pd.to_string(index=False))
 
 print(" " " ")
 
-# describe() on numeric columns only, oriented like pandas' describe()
-# (statistics as columns, data columns as rows)
+
 describe_pd = wine.select(pl.exclude("type")).describe().to_pandas()
 print(describe_pd.set_index("statistic").T)
 
@@ -56,7 +50,7 @@ print("Missing values:")
 null_counts = wine.null_count().to_pandas().iloc[0]
 null_counts.name = None
 print(null_counts)
-print(f"Duplicate rows: {wine.is_duplicated().sum()}")
+print(f"Duplicate rows: {len(wine) - wine.unique().height}")
 
 print(" " " ")
 
@@ -90,25 +84,33 @@ show(low_alcohol_red[["type", "alcohol", "quality"]].head())
 print(" " " ")
 
 # Step 4: Grouping
-by_type = wine.group_by("type").agg(
-    avg_alcohol=pl.col("alcohol").mean(),
-    std_alcohol=pl.col("alcohol").std(),
-    min_alcohol=pl.col("alcohol").min(),
-    max_alcohol=pl.col("alcohol").max(),
-    avg_quality=pl.col("quality").mean(),
-    no_of_wines=pl.col("quality").count(),
-).sort("type")
+by_type = (
+    wine.group_by("type")
+    .agg(
+        avg_alcohol=pl.col("alcohol").mean(),
+        std_alcohol=pl.col("alcohol").std(),
+        min_alcohol=pl.col("alcohol").min(),
+        max_alcohol=pl.col("alcohol").max(),
+        avg_quality=pl.col("quality").mean(),
+        no_of_wines=pl.col("quality").count(),
+    )
+    .sort("type")
+)
 show(by_type)
 
 print(" " " ")
 
-by_quality = wine.group_by("quality").agg(
-    avg_alcohol=pl.col("alcohol").mean(),
-    std_alcohol=pl.col("alcohol").std(),
-    min_alcohol=pl.col("alcohol").min(),
-    max_alcohol=pl.col("alcohol").max(),
-    no_of_wines=pl.col("alcohol").count(),
-).sort("quality")
+by_quality = (
+    wine.group_by("quality")
+    .agg(
+        avg_alcohol=pl.col("alcohol").mean(),
+        std_alcohol=pl.col("alcohol").std(),
+        min_alcohol=pl.col("alcohol").min(),
+        max_alcohol=pl.col("alcohol").max(),
+        no_of_wines=pl.col("alcohol").count(),
+    )
+    .sort("quality")
+)
 show(by_quality)
 
 print(" " " ")
@@ -173,3 +175,86 @@ plt.ylabel("Density")
 plt.tight_layout()
 plt.savefig("graphs/alcohol_vs_density_polars.png", dpi=150)
 print("Scatter plot with trend line saved as alcohol_vs_density_polars.png")
+
+print(" " " ")
+
+# Step 8: Benchmark - Pandas vs Polars
+print("Benchmarking Pandas vs Polars")
+
+N_RUNS = 20
+
+
+def best_of(fn, n=N_RUNS):
+    times = []
+    for _ in range(n):
+        start = time.perf_counter()
+        fn()
+        times.append(time.perf_counter() - start)
+    return min(times)
+
+
+benchmark_results = {"pandas": {}, "polars": {}}
+
+benchmark_results["pandas"]["CSV Read"] = best_of(
+    lambda: pd.read_csv("data/wine_quality_merged.csv")
+)
+benchmark_results["polars"]["CSV Read"] = best_of(
+    lambda: pl.read_csv("data/wine_quality_merged.csv")
+)
+
+benchmark_results["pandas"]["Head"] = best_of(lambda: wine_pd.head())
+benchmark_results["polars"]["Head"] = best_of(lambda: wine.head())
+
+benchmark_results["pandas"]["Filter"] = best_of(
+    lambda: wine_pd[wine_pd["quality"] >= 7]
+)
+benchmark_results["polars"]["Filter"] = best_of(
+    lambda: wine.filter(pl.col("quality") >= 7)
+)
+
+benchmark_results["pandas"]["GroupBy Mean"] = best_of(
+    lambda: wine_pd.groupby("type")["alcohol"].mean()
+)
+benchmark_results["polars"]["GroupBy Mean"] = best_of(
+    lambda: wine.group_by("type").agg(pl.col("alcohol").mean())
+)
+
+operations = ["CSV Read", "Head", "Filter", "GroupBy Mean"]
+
+print(f"Benchmark results (best of {N_RUNS} runs, in seconds):")
+print(f"{'Operation':<15}{'Pandas':>12}{'Polars':>12}")
+for op in operations:
+    print(
+        f"{op:<15}{benchmark_results['pandas'][op]:>12.5f}"
+        f"{benchmark_results['polars'][op]:>12.5f}"
+    )
+
+pandas_times = [benchmark_results["pandas"][op] for op in operations]
+polars_times = [benchmark_results["polars"][op] for op in operations]
+
+x = range(len(operations))
+width = 0.35
+
+plt.figure(figsize=(9, 6))
+plt.bar(
+    [i - width / 2 for i in x],
+    pandas_times,
+    width,
+    label="pandas",
+    color="#2a78d6",
+)
+plt.bar(
+    [i + width / 2 for i in x],
+    polars_times,
+    width,
+    label="polars",
+    color="#eb6834",
+)
+plt.xticks(list(x), operations)
+plt.ylabel("Time (seconds)")
+plt.title("Pandas vs Polars: Benchmark on Wine Quality Dataset")
+plt.legend()
+plt.grid(axis="y", alpha=0.3)
+plt.tight_layout()
+plt.savefig("graphs/pandas_vs_polars_benchmark.png", dpi=150)
+print("Benchmark chart saved as graphs/pandas_vs_polars_benchmark.png")

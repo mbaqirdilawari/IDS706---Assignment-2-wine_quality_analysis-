@@ -7,6 +7,11 @@ setup:
 run:
 	python analysis.py
 
+# Runs the Polars version of the analysis script (includes the pandas vs
+# polars benchmark)
+run-polars:
+	python analysis_polars.py
+
 # Deletes cached files and generated charts for a fresh run
 clean:
 	rm -rf __pycache__
