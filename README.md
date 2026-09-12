@@ -422,4 +422,6 @@ Since the train/test split was done on the full dataset, repeated rows could lan
 Linear regression can predict values like 5.4 that don't correspond to any real score, and treats a 1-point miss the same everywhere on the scale. An ordinal regression or classification approach would match the actual structure of the target variable more closely.
 
 
+
+
 **Note: I have added the Rust notebook from the latest Tutorial, with an example of my own, to display what we learnt in class about Python vs Rust.**
