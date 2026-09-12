@@ -165,10 +165,11 @@ print(wine["type"].value_counts())
 **What this step does:** 
 
 Looks at the data's structure and health before doing any
-real analysis. What the columns look like, what type of data each holds, and whether
-anything is missing or duplicated.
+real analysis. Its shape, what the columns look like, what type of data each holds, and
+whether anything is missing or duplicated.
 
 ```python
+print(f"Shape (rows, columns): {wine.shape}")
 print(wine.head())
 wine.info()
 print(wine.describe())
@@ -179,6 +180,7 @@ print(f"Duplicate rows: {wine.duplicated().sum()}")
 
 **What we found:** 
 
+*`wine.shape` confirms the dataset is 6,497 rows by 13 columns.*
 *No column has any missing values. Every one of the 13 columns shows 0 missing across all 6,497 rows.*
 *There are, however, 1,177 exact duplicate rows (about 18% of the dataset), rows that repeat another row's values identically.* 
 *.describe() shows that most chemical measurements are fairly tight (e.g. alcohol ranges from 8.0% to 14.9%, averaging 10.49%), but residual sugar is heavily skewed: its 75th percentile is 8.1 but its maximum is 65.8, meaning a small number of unusually sweet wines pull the average up.*

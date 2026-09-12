@@ -27,6 +27,7 @@ print(type_counts)
 print(" " " ")
 
 # Step 2: Inspecting the data
+print(f"Shape (rows, columns): {wine.shape}")
 show(wine.head())
 
 info_pd = pd.DataFrame(

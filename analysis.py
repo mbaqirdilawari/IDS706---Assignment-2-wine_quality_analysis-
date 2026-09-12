@@ -18,6 +18,7 @@ print(wine["type"].value_counts())
 print(" " " ")
 
 # Step 2: Inspecting the data
+print(f"Shape (rows, columns): {wine.shape}")
 print(wine.head())
 wine.info()
 print(wine.describe())
